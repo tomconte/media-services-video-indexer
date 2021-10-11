@@ -5,7 +5,7 @@
          "name": {
             "type": "string",
             "metadata" : {
-                "description" : "The name of the cxzczxczxczxczxcAVAM resource"
+                "description" : "The name of the AVAM resource"
             },
             "defaultValue": "avam-account"
         },
