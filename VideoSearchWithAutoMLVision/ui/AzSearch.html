@@ -48,7 +48,20 @@
                     <div id="clearFilters"></div>
                     <ul class="nav nav-sidebar">
                         <div className="panel panel-primary behclick-panel">
-
+                            <ul class="nav nav-sidebar">
+                                <li>
+                                    <div id="topics">
+                                    </div>
+                                </li>
+                                <li>
+                                    <div id="labels">
+                                    </div>
+                                </li>
+                                <li>
+                                    <div id="keywords">
+                                    </div>
+                                </li>
+                            </ul>
                         </div>
                     </ul>
                 </div>
@@ -81,16 +94,16 @@
     // Initialize and connect to video indexer and your azure search service
 
     // set the video indexer variables here
-    var viLocation = "";
-    var viAccountId = "";
-    var viKey = "";
+    var viLocation = "trial";
+    var viAccountId = "ea4e6d1c-8cd4-4716-bff1-0d8f51c93626";
+    var viKey = "c74b3052c3e24f1abab5064759084a0c";
     var viPlayerUrl = "https://www.videoindexer.ai/embed/player";
     var viAccessTokenUrl = "https://api.videoindexer.ai/Auth/" + viLocation + "/Accounts/" + viAccountId + "/AccessToken";
 
     // set the azure search variables here
-    var azureSearchIndexName = "";
+    var azureSearchIndexName = "tco-videos-index4";
     var azureSearchQueryKey = "";
-    var azureSearchServiceName = "";
+    var azureSearchServiceName = "searchservicebqfqk";
     var automagic = new AzSearch.Automagic({ index: azureSearchIndexName, queryKey: azureSearchQueryKey, service: azureSearchServiceName });
 
     // call video indexer to retrieve the access token
@@ -182,6 +195,11 @@
         },
         "",
         suggestionsTemplate);
+
+    // Add facets
+    automagic.addCheckboxFacet("topics", "topics/topic", "collection");
+    automagic.addCheckboxFacet("labels", "labels/label", "collection");
+    automagic.addCheckboxFacet("keywords", "keywords/keyword", "collection");
 
     // Adds a button to clear any applied filters
     automagic.addClearFiltersButton("clearFilters");
