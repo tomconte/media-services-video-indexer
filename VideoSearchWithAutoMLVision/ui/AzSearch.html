@@ -6,7 +6,7 @@
     <!-- Optional theme -->
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css" integrity="sha384-rHyoN1iRsVXV4nD0JutlnGaslCJuC7uwjduW9SVrLvRYooPp2bWYgmgJQIXwl/Sp"
         crossorigin="anonymous">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/azsearch.js@0.0.21/dist/AzSearch.css">
+    <link rel="stylesheet" href="node_modules/@tomconte/azsearch.js/dist/AzSearch.css">
     <title>Azure Cognitive Search Demo App</title>
     <style>
         .searchResults__result h4 {
@@ -85,7 +85,7 @@
 <script src="https://cdn.jsdelivr.net/react/15.5.0/react-dom.min.js"></script>
 <script type="text/javascript" src="https://cdn.jsdelivr.net/redux/3.6.0/redux.min.js"></script>
 <!-- Main -->
-<script src="https://cdn.jsdelivr.net/npm/azsearch.js@0.0.21/dist/AzSearch.bundle.js"></script>
+<script src="node_modules/@tomconte/azsearch.js/dist/AzSearch.bundle.js"></script>
 <script>
     // WARNING
     // For demonstration purposes only, do not use in a production environment. For simplicity, this is a single HTML page that has the query key to the search service.
@@ -197,9 +197,9 @@
         suggestionsTemplate);
 
     // Add facets
-    automagic.addCheckboxFacet("topics", "topics/topic", "collection");
-    automagic.addCheckboxFacet("labels", "labels/label", "collection");
-    automagic.addCheckboxFacet("keywords", "keywords/keyword", "collection");
+    automagic.addCheckboxFacet("topics", "topics/topic", "collectionComplex");
+    automagic.addCheckboxFacet("labels", "labels/label", "collectionComplex");
+    automagic.addCheckboxFacet("keywords", "keywords/keyword", "collectionComplex");
 
     // Adds a button to clear any applied filters
     automagic.addClearFiltersButton("clearFilters");
