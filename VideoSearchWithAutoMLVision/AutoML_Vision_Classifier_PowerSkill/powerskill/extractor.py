@@ -11,6 +11,10 @@ from azureml.contrib.automl.dnn.vision.classification.inference.score import _sc
 from azureml.contrib.automl.dnn.vision.common.model_export_utils import run_inference
 from dotenv import load_dotenv
 from objdict import ObjDict
+from torchvision import transforms as trn
+from torch.autograd import Variable as V
+from torch.nn import functional as F
+from PIL import Image
 
 from powerskill.timer import timefunc
 
@@ -109,23 +113,46 @@ def go_extract(inputs, classification_model, video_indexer):
         artifacts_url = video_indexer.get_video_artifacts(video_id)
 
         if artifacts_url.status_code != 200:
-            raise(f"Could not download artifacts {artifacts_url.status_code} {artifacts_url.text}")
+            raise Exception(f"Could not download artifacts {artifacts_url.status_code} {artifacts_url.text}")
 
         # Extract the artifacts
         artifacts = requests.get(artifacts_url.text.replace('"', ''), stream=True)
         with ZipFile(io.BytesIO(artifacts.content)) as zip:
             zip.extractall('/usr/src/api/thumbnails/')
 
+        # load the image transformer
+        centre_crop = trn.Compose([
+            trn.Resize((256, 256)),
+            trn.CenterCrop(224),
+            trn.ToTensor(),
+            trn.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
+        ])
+
+        # load the class label
+        file_name = 'models/categories_places365.txt'
+        classes = list()
+        with open(file_name) as class_file:
+            for line in class_file:
+                classes.append(line.strip().split(' ')[0][3:])
+        classes = tuple(classes)
+
         for thumbnail in keyframes:
 
             # Let's go and predict the label for the keyframe
-            encoded_image = get_base64_encoded_image(os.path.join('/usr/src/api/thumbnails/',
-                                                                  thumbnail['keyframeThumbNail']))
+            img = Image.open(os.path.join('/usr/src/api/thumbnails/', thumbnail['keyframeThumbNail']))
 
-            img = base64.b64decode(str(encoded_image).strip())
-            result = str(run_inference(classification_model, img, _score_with_model))
-            best_labels = extract_label(result)
-            thumbnail["keyFrameThumbNailLabel"] = best_labels[0]
+            # img = base64.b64decode(str(encoded_image).strip())
+            # result = str(run_inference(classification_model, img, _score_with_model))
+            # best_labels = extract_label(result)
+
+            input_img = V(centre_crop(img).unsqueeze(0))
+
+            # forward pass
+            logit = classification_model.forward(input_img)
+            h_x = F.softmax(logit, 1).data.squeeze()
+            probs, idx = h_x.sort(0, True)
+            
+            thumbnail["keyFrameThumbNailLabel"] = classes[idx[0]]
 
     except Exception as ProcessingError:
         logging.exception(ProcessingError)

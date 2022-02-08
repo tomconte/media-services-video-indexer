@@ -1,6 +1,8 @@
 import logging
 import json
 from azureml.contrib.automl.dnn.vision.common.model_export_utils import load_model
+import torch
+import torchvision.models as models
 from azureml.core import Workspace
 from azureml.core.experiment import Experiment
 from azureml.core.authentication import ServicePrincipalAuthentication
@@ -11,7 +13,21 @@ class Models:
     def __init__(self, azureml_model_dir, classication_model):
         self.azureml_model_dir = azureml_model_dir
         self.classication_model = classication_model
+        self.pytorch_model = None
         self.task_type = 'image-multi-labeling'   # TODO Change to project type when required
+
+    def load_pytorch_model(self, azureml_model_dir):
+        logging.info(f"Loading PyTorch model from {azureml_model_dir}")
+        model_file = azureml_model_dir + '/resnet18_places365.pth.tar'
+
+        model = models.__dict__['resnet18'](num_classes=365)
+        checkpoint = torch.load(model_file, map_location=lambda storage, loc: storage)
+        state_dict = {str.replace(k, 'module.', ''): v for k,
+                    v in checkpoint['state_dict'].items()}
+        model.load_state_dict(state_dict)
+        model.eval()
+
+        self.pytorch_model = model
 
     def load_classification_model(self, azureml_model_dir):
         """

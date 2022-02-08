@@ -29,9 +29,11 @@ API_KEY_NAME = "Ocp-Apim-Subscription-Key"
 
 api_key_header = APIKeyHeader(name=API_KEY_NAME, auto_error=False)
 class_model = models.Models(azureml_model_dir=None, classication_model=None)
-video_indexer_api = vi.VideoIndexerAPI(vi_api_key=os.environ['VI_API_KEY'],
-                                       vi_location=os.environ['VI_LOCATION'],
-                                       vi_account_id=os.environ['VI_ACCOUNT_ID'])
+video_indexer_api = vi.VideoIndexerAPI(avam_location=os.environ['AVAM_LOCATION'],
+                                       avam_subscription=os.environ['AVAM_SUBSCRIPTION'],
+                                       avam_resource_group=os.environ['AVAM_RESOURCE_GROUP'],
+                                       avam_account_id=os.environ['AVAM_ACCOUNT_ID'],
+                                       avam_account_name=os.environ['AVAM_ACCOUNT_NAME'])
 
 
 @app.on_event("startup")
@@ -44,7 +46,8 @@ async def startup_event():
             else:
                 class_model.load_classification_model(os.environ['AZUREML_MODEL_DIR'])
         else:
-            class_model.load_classification_model(os.environ['AZUREML_MODEL_DIR'])
+            # class_model.load_classification_model(os.environ['AZUREML_MODEL_DIR'])
+            class_model.load_pytorch_model(os.environ['AZUREML_MODEL_DIR'])
     except Exception as NOMODELFOUND:
         logging.error(f"No model could be loaded {NOMODELFOUND}")
 
@@ -71,7 +74,7 @@ def extract(values: Values, api_key: APIKey = Depends(get_api_key)):
     if not body:
         return 'Expected text within body of request. No text found.', status.HTTP_400_BAD_REQUEST
     else:
-        return extractor.go_extract(body, classification_model=class_model.classication_model,
+        return extractor.go_extract(body, classification_model=class_model.pytorch_model,
                                     video_indexer=video_indexer_api)
 
 
